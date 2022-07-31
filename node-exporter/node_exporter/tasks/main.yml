@@ -1,0 +1,66 @@
+---
+- name: check if node exporter exit
+  stat:
+    path: "{{node_exporter_bin}}"
+    register: check_node_present
+
+- name: create node user
+  user:
+    name: "{{node_exporter_user}}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: create node exporter config dir
+  file:
+    path: "{{node_exporter_dir_conf}}"
+    state: directory
+    owner: "{{node_exporter_user}}"
+    group: "{{node_exporter_group}}"
+
+- name: if node exit get version
+  shell: "cat /etc/systemd/system/node_exporter.service | grep version | sed -e 's/.*version//g' "
+  when: check_node_present.stat.exist == true
+  changed_when: false
+  resgister: node_get_version
+
+- name: download and unzip node exporter
+  unzip:
+    src: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /temp
+    remote_src: yes
+    validate_certs: no
+
+- name: copie le binaire dans le repertoir final
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz/node_exporter"
+    dest: "{{node_exporter_bin}}"
+    owner: "{{node-exporter_user}}"
+    group: "{{node_exporter_group}}"
+    mode: 0755
+    remote_src: yes
+    when: check_node_present.stat.exist == false or not node_get_version == node_exporter_version
+
+- name: clean
+  file:
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz/
+    state: absent
+    
+- name: install service
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.sercvice
+    owner: root
+    group: root
+    mode: 0755
+    notify: daemon_reload   
+
+- meta: flush_handlers
+
+- name: start always
+  systemd:
+    state: started
+    enabled: yes 
+
+# tasks file for node_exporter

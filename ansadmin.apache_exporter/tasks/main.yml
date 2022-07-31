@@ -1,0 +1,62 @@
+---
+- name: check if node exorpetr exist
+  stat:
+    path: "{{apache_exporter_bin }}"
+  register: __check_pache_exporter_present
+
+- name: create apache exporter user
+  user:
+    name: "{{apache_exporter_user}}"
+    group: "{{apache_exporter_group}}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: create conf dir
+  file:
+    path: "{{apache_exporter_dir_conf}}"
+    state: directory
+    owner: "{{apache_exporter_user}}"
+    group: "{{apache_exporter_group}}"
+
+- name: download and unzip apache exporter
+  unarchive:
+    src: /home/ansadmin/apache_exporter-0.11.0.aix-ppc64.tar.gz
+    dest: /tmp/
+    remote_src: no
+    validate_certs: no
+
+- name: deplacer le binaire
+  copy:
+    src: /tmp/apache_exporter-0.11.0.aix-ppc64/apache_exporter
+    dest: "{{apache_exporter_bin}}"
+    owner: "{{apache_exporter_user}}"
+    group: "{{apache_exporter_group}}"
+    mode: 0755
+    remote_src: yes
+  when: __check_pache_exporter_present.stat.exists == false
+
+- name: clean
+  file:
+    path: /temp/apache_exporter-0.11.0.aix-ppc64/apache_exporter
+    state: absent
+
+
+- name: install service
+  template:
+    src: apache_exporter.service.j2
+    dest: /etc/systemd/system/apache_exporter.service
+    owner: root
+    group: root
+    mode: 0755
+  notify: "reload and started apache-exporter"
+
+- meta: flush_handlers
+
+- name: service started
+  systemd:
+    name: apache_exporter
+    state: started
+    enabled: yes
+# tasks file for ansadmin.apache_exporter

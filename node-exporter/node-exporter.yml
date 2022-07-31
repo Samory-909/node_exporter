@@ -1,0 +1,7 @@
+---
+- name: installer le node exporter
+  hosts: 146.59.157.126
+  remote_user: etl
+  become_method: sudo
+  roles:
+  - node_exporter

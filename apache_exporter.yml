@@ -1,0 +1,9 @@
+---
+- name: install apache_exporter
+  hosts: 92.222.172.32
+  remote_user: apx03
+  become_method: sudo
+  vars_files:
+    - /etc/ansible/roles/ansadmin.apache_exporter/vars/main.yml
+  roles:
+    - { role: ansadmin.apache_exporter, x: 42 }

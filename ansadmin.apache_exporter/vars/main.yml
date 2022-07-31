@@ -1,0 +1,8 @@
+---
+apache_exporter_version: "0.11.0"
+apache_exporter_user: apache-exporter
+apache_exporter_group: "{{ apache_exporter_user }}"
+apache_exporter_bin: /usr/local/bin/apache_exporter
+apache_exporter_dir_conf: /opt/apache-exporter
+
+# vars file for ansadmin.apache_exporter

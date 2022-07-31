@@ -1,0 +1,8 @@
+---
+- name: install posgresql
+  apt: 
+  name: postgresql
+  state: latest
+  notify: start postgresql service
+
+# tasks file for postgresql

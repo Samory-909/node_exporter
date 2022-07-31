@@ -1,0 +1,6 @@
+---
+- name: installer le node exporter
+  hosts: 92.222.172.32
+  become: true
+  roles:
+  - node-expoter

@@ -1,0 +1,9 @@
+---
+- name: reload and started apache-exporter
+  systemd:
+   name: apache_exporter
+   state: started
+   daemon_reload: yes
+   enabled: yes
+
+# handlers file for ansadmin.apache_exporter
